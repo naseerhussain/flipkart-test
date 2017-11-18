@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<style type="text/css">
+	#parent{
+		width: 100%;
+		float: left;
+	}
+</style>
+<script>
+$(document).ready(function(){
+	$('#btn').click(function(){
+		var noteText = $('#input').val();
+		console.log(noteText);
+		addParent(noteText);
+		drawNotes();
+	});
+
+	function addParent(notes){
+		var main = JSON.parse(localStorage.getItem('main')) || [];
+
+		$('#parent').empty();		
+		var obj = {
+			"level":0,
+			"childId":0,
+			"parentId":main.length,
+			"text":notes
+		};
+		if(! containsParentObject(obj, main)){
+			main.push(obj);
+		}
+		main = JSON.stringify(main);
+		localStorage.setItem('main',main);
+	}
+
+	function deleteNotes(parentId,childId, level){
+		console.log(parentId,childId, level);
+		deleteLevelElement(main, level, parentId, childId);
+		drawNotes()
+	}
+
+	function deleteLevelElement(arr, level, parent, child){
+		for(var i=0;i<arr;i++){
+			if(arr[i].level == level && arr[i].parentId == parent && arr[i].childId == child){
+				arr.splice(parent,1);
+			}else{
+				deleteLevelElement(arr[i].children, arr[i].level, arr[i].parentId, arr[i].childId)
+			}
+		}
+	}
+
+	function createNotes(parentId,childId){
+		var noteText = $('#input').val();
+		var main = JSON.parse(localStorage.getItem('main'));
+		var level = main[parentId].level;
+		if(main[parentId].children){
+			//level = main[parentId].children.length;
+		}else{
+			main[parentId].children = [];
+		}
+
+		var obj = {
+			"level":level + 1,
+			"childId":childId,
+			"parentId":parentId,
+			"text":noteText
+		}
+
+		if(!containsObject(obj, main[parentId].children)){
+			main[parentId].children.push(obj);
+		}
+		main = JSON.stringify(main);
+		localStorage.setItem('main',main);	
+		drawNotes();
+	}
+
+	function containsObject(obj, list) {
+	    var i;
+	    for (i = 0; i < list.length; i++) {
+	        if (list[i] === obj) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	}
+
+	function containsParentObject(obj, list) {
+	    var i;
+	    for (i = 0; i < list.length; i++) {
+	        if (list[i].childId === obj.childId && list[i].text == obj.text) {
+	            return true;
+	        }
+	    }
+
+	    return false;
+	}
+
+	
+	function drawNotes(){
+		//$('#parent').empty();
+		var main = JSON.parse(localStorage.getItem('main'));
+		for(var i=0;i<main.length;i++){
+			if(! main[i].children){
+				drawSubNotes(main, main[i].level, main[i].parentId, main[i].childId);
+				//break;
+			}
+			if(main[i].children){
+				callChild(main[i].children)
+			}
+		}
+	}
+
+	function callChild(arr){
+		for(var i=0;i<arr.length;i++){
+			if(! arr[i].children){
+				drawSubNotes(arr,arr[i].level, arr[i].parentId, arr[i].childId);
+				//break;
+			}
+			if(arr[i].children){
+				callChild(arr[i].children)
+			}
+
+		}
+	}
+
+	function drawSubNotes(arr, level,parentId, callChild){
+		var div ='';
+		for(var i=0;i<arr.length;i++){
+			var width = 10;
+			if(level > 0){
+				width = 100;
+			}
+			div +="<div style='width:"+width+"%;float:left;margin-left:1%;' class='parent_"+i+"' id='"+i+"' level="+level+">"+arr[i].text+"<br><button id='"+i+"' class='del' level="+level+">Delete</button><button id='"+i+"' class='newNote'>New Note</button></div>";
+		}
+		if(level == 0){
+			$('#parent').append(div);
+		}else{
+		//	$('.parent_'+parentId).empty();
+			$('.parent_'+parentId).append(div);
+		}
+
+
+		$('.newNote').click(function(e){
+			e.stopImmediatePropagation()
+			var childId = $(this).attr('id');
+			var parentId = $(this).parent().attr('id');
+			createNotes(parentId,childId);
+		});
+
+		$('.del').click(function(e){
+			e.stopImmediatePropagation()
+			var childId = $(this).attr('id');
+			var prentId = $(this).parent().attr('id');
+			var level = $(this).parent().attr('level');
+			deleteNotes(parentId,childId, level);
+			
+		});
+	}
+
+
+
+});
+</script>
+</head>
+<body>
+
+
+<input type="text" id="input" placeholder="Enter the text"/> 
+
+<button id="btn">Submit</button>
+
+<div id="parent"></div>
+
+</body>
+</html>
