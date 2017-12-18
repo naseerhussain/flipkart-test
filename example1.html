@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<body>
+<div ng-app="app">
+
+<div ng-controller="parentCtrl">
+    <input type="text" name="abc" ng-model='parent.name'>
+        name parent: {{parent.name}}
+    <div ng-controller='child1'>
+        <input type="text" name="abc" ng-model='parent.name'>
+        name child1: {{parent.name}}
+    </div>
+    <div ng-controller='child2'>
+        <input type="text" name="abc" ng-model='parent.name'>
+        name child2: {{parent.name}}
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+var app = angular.module('app', []);
+    app.controller('parentCtrl',function($scope){
+        // $scope.parent = {
+        //    
+        // }
+        // $scope.par = {
+        //  name : 'abhishek'
+        // }
+    });
+    app.controller('child1',function($scope){
+        // $scope.parent = {
+        //        name : 'abhishek'
+        //  }
+        $scope.abc = "hi";
+        
+    });
+    app.controller('child2',function($scope){
+
+        require:{
+            controller:'child1';
+        }
+        
+    });
+    
+</script>
+
+</body>
+</html>
